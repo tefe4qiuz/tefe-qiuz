@@ -221,18 +221,24 @@
       loginButton.disabled = true;
       loginButton.textContent = "Signing in...";
 
-      try {
-        await auth.signInWithEmailAndPassword(email, password);
+      
+try {
+    await auth.signInWithEmailAndPassword(email, password);
 
-        message.style.color = "#15803d";
-        message.textContent = "Login successful. Admin authorization is still being checked.";
-      } catch (error) {
-        message.style.color = "#dc2626";
-        message.textContent = "Login failed: " + error.message;
-      } finally {
-        loginButton.disabled = false;
-        loginButton.textContent = "LOGIN";
-      }
+    message.style.color = "#15803d";
+    message.textContent = "Login successful. Opening dashboard...";
+
+    window.location.href = "dashboard.html";
+
+} catch (error) {
+    message.style.color = "#dc2626";
+    message.textContent = "Login failed: " + error.message;
+
+} finally {
+    loginButton.disabled = false;
+    loginButton.textContent = "LOGIN";
+}
+      
     };
 
     document.getElementById("forgotPassword").onclick = async function (event) {
