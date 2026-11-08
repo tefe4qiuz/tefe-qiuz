@@ -1,0 +1,261 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TEFE QIUZ | Admin Login</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: #f3f6fc;
+      font-family: Arial, sans-serif;
+    }
+
+    .login-card {
+      background: white;
+      width: 100%;
+      max-width: 420px;
+      padding: 30px 25px;
+      border-radius: 18px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.08);
+    }
+
+    .brand { text-align: center; margin-bottom: 25px; }
+
+    .logo {
+      width: 58px;
+      height: 58px;
+      background: #183b70;
+      color: white;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      margin: auto;
+      font-size: 30px;
+    }
+
+    h1 {
+      color: #183b70;
+      margin: 12px 0 5px;
+      font-size: 27px;
+    }
+
+    .brand p, .intro, .note { color: #64748b; }
+
+    .brand p { font-size: 12px; letter-spacing: 1px; }
+
+    h2 { color: #172554; margin-bottom: 8px; }
+
+    .intro { font-size: 14px; margin-bottom: 25px; }
+
+    label {
+      display: block;
+      margin: 17px 0 8px;
+      color: #334155;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 9px;
+      font-size: 15px;
+    }
+
+    input:focus {
+      outline: 2px solid #93b4e8;
+      border-color: #183b70;
+    }
+
+    .password-wrap { position: relative; }
+
+    .password-wrap input { padding-right: 55px; }
+
+    .show-password {
+      position: absolute;
+      right: 10px;
+      top: 12px;
+      border: 0;
+      background: none;
+      color: #183b70;
+      cursor: pointer;
+    }
+
+    .forgot {
+      display: block;
+      text-align: right;
+      margin: 14px 0 22px;
+      color: #2563eb;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    button.login {
+      width: 100%;
+      padding: 15px;
+      border: 0;
+      border-radius: 9px;
+      background: #183b70;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled { opacity: .6; }
+
+    #message {
+      font-size: 13px;
+      margin-top: 15px;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+
+    .note {
+      font-size: 12px;
+      text-align: center;
+      margin-top: 22px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="login-card">
+
+    <header class="brand">
+      <div class="logo">🎓</div>
+      <h1>TEFE QIUZ</h1>
+      <p>ADMINISTRATION PORTAL</p>
+    </header>
+
+    <h2>Welcome, Admin</h2>
+    <p class="intro">
+      Sign in to manage your examination platform.
+    </p>
+
+    <form id="loginForm">
+      <label for="email">Admin Email</label>
+      <input
+        type="email"
+        id="email"
+        placeholder="Enter your email address"
+        autocomplete="username"
+        required
+      >
+
+      <label for="password">Password</label>
+      <div class="password-wrap">
+        <input
+          type="password"
+          id="password"
+          placeholder="Enter your password"
+          autocomplete="current-password"
+          required
+        >
+        <button
+          type="button"
+          class="show-password"
+          id="togglePassword"
+        >Show</button>
+      </div>
+
+      <a href="#" class="forgot" id="forgotPassword">
+        Forgot password?
+      </a>
+
+      <button class="login" id="loginButton" type="submit">
+        LOGIN
+      </button>
+    </form>
+
+    <p id="message" role="status" aria-live="polite"></p>
+
+    <p class="note">Authorized administrators only</p>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+
+  <script>
+   const firebaseConfig = {
+  apiKey: "AIzaSyBVQgHN3PqLH2Q0MaOrVwXKNq2-wQSue98",
+  authDomain: "tefe-qiuz.firebaseapp.com",
+  projectId: "tefe-qiuz",
+  storageBucket: "tefe-qiuz.firebasestorage.app",
+  messagingSenderId: "397460827907",
+  appId: "1:397460827907:web:c64188008b69d9eef18336",
+  measurementId: "G-DBNDVH3G5R"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    const message = document.getElementById("message");
+    const loginButton = document.getElementById("loginButton");
+
+    document.getElementById("togglePassword").onclick = function () {
+      const field = document.getElementById("password");
+      const hidden = field.type === "password";
+      field.type = hidden ? "text" : "password";
+      this.textContent = hidden ? "Hide" : "Show";
+    };
+
+    document.getElementById("loginForm").onsubmit = async function (event) {
+      event.preventDefault();
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      message.textContent = "";
+      loginButton.disabled = true;
+      loginButton.textContent = "Signing in...";
+
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+
+        message.style.color = "#15803d";
+        message.textContent = "Login successful. Admin authorization is still being checked.";
+      } catch (error) {
+        message.style.color = "#dc2626";
+        message.textContent = "Login failed: " + error.message;
+      } finally {
+        loginButton.disabled = false;
+        loginButton.textContent = "LOGIN";
+      }
+    };
+
+    document.getElementById("forgotPassword").onclick = async function (event) {
+      event.preventDefault();
+
+      const email = document.getElementById("email").value.trim();
+
+      if (!email) {
+        message.style.color = "#dc2626";
+        message.textContent = "Enter your email address first.";
+        return;
+      }
+
+      try {
+        await auth.sendPasswordResetEmail(email);
+        message.style.color = "#15803d";
+        message.textContent = "Password reset email sent. Check your inbox.";
+      } catch (error) {
+        message.style.color = "#dc2626";
+        message.textContent = "Could not send reset email: " + error.message;
+      }
+    };
+  </script>
+</body>
+  </html>
+  
