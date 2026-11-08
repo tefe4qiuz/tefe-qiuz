@@ -1,0 +1,203 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TEFE QIUZ - Admin Dashboard</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    color: #172554;
+}
+
+header {
+    background: #102b50;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+header h2 {
+    margin: 0;
+}
+
+button {
+    border: none;
+    padding: 11px 18px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.logout {
+    background: #ef4444;
+    color: white;
+}
+
+.container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 22px;
+}
+
+.welcome {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    margin-bottom: 22px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+}
+
+.card {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+    border-left: 5px solid #2563eb;
+}
+
+.card h3 {
+    margin-top: 0;
+}
+
+.card p {
+    color: #64748b;
+}
+
+.locked {
+    background: #e2e8f0;
+    color: #475569;
+    cursor: not-allowed;
+}
+
+.notice {
+    margin-top: 22px;
+    padding: 16px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 9px;
+    color: #9a3412;
+}
+
+#loading {
+    text-align: center;
+    padding: 50px 15px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="loading">Checking your login...</div>
+
+<div id="dashboard" style="display:none;">
+
+<header>
+    <h2>TEFE QIUZ</h2>
+    <button class="logout" onclick="logout()">Logout</button>
+</header>
+
+<main class="container">
+
+    <section class="welcome">
+        <h2>Welcome, Administrator!</h2>
+        <p>Manage your online examination platform from here.</p>
+    </section>
+
+    <section class="grid">
+
+        <div class="card">
+            <h3>👨‍🎓 Students</h3>
+            <p>Manage student accounts and information.</p>
+            <button class="locked" disabled>Coming soon</button>
+        </div>
+
+        <div class="card">
+            <h3>📝 Examinations</h3>
+            <p>Create and manage online examinations.</p>
+            <button class="locked" disabled>Coming soon</button>
+        </div>
+
+        <div class="card">
+            <h3>📚 Subjects</h3>
+            <p>Organize examination subjects.</p>
+            <button class="locked" disabled>Coming soon</button>
+        </div>
+
+        <div class="card">
+            <h3>📊 Results</h3>
+            <p>View student examination results.</p>
+            <button class="locked" disabled>Coming soon</button>
+        </div>
+
+        <div class="card">
+            <h3>📥 Submissions</h3>
+            <p>Monitor submitted examination answers.</p>
+            <button class="locked" disabled>Coming soon</button>
+        </div>
+
+    </section>
+
+    <div class="notice">
+        <strong>Security setup required:</strong>
+        Your login is authenticated, but administrator permissions
+        have not yet been verified. Dashboard functions remain locked.
+    </div>
+
+</main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBVQgHN3PqLH2Q0MaOrVwXKNq2-wQSue98",
+  authDomain: "tefe-qiuz.firebaseapp.com",
+  projectId: "tefe-qiuz",
+  storageBucket: "tefe-qiuz.firebasestorage.app",
+  messagingSenderId: "397460827907",
+  appId: "1:397460827907:web:c64188008b69d9eef18336",
+  measurementId: "G-DBNDVH3G5R"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+
+auth.onAuthStateChanged(function(user) {
+    if (user) {
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+    } else {
+        window.location.href = "admin.html";
+    }
+});
+
+function logout() {
+    auth.signOut().then(function() {
+        window.location.href = "admin.html";
+    });
+}
+</script>
+
+</body>
+              </html>
+              
