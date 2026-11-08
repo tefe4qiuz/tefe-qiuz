@@ -182,12 +182,40 @@ firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
 
-auth.onAuthStateChanged(function(user) {
-    if (user) {
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("dashboard").style.display = "block";
-    } else {
+auth.onAuthStateChanged(async function(user) {
+    if (!user) {
         window.location.href = "admin.html";
+        return;
+    }
+
+    try {
+        const token = await user.getIdToken();
+
+        const response = await fetch(
+            "https://tefe-qiuz.onrender.com/verify-admin",
+            {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer " + token,
+                    "Content-Type": "application/json"
+                }
+            }
+        );
+
+        const result = await response.json();
+
+        if (response.ok && result.authorized === true) {
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("dashboard").style.display = "block";
+        } else {
+            alert("Administrator access denied.");
+            await auth.signOut();
+            window.location.href = "admin.html";
+        }
+
+    } catch (error) {
+        document.getElementById("loading").textContent =
+            "Unable to verify administrator access. Please try again.";
     }
 });
 
