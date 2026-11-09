@@ -57,6 +57,107 @@ app.post("/verify-admin", async (req, res) => {
   }
 });
 
+app.post("/register-student", async (req, res) => {
+  let newUser = null;
+
+  try {
+    const { fullName, email, password } = req.body;
+
+    if (
+      !fullName || !email || !password ||
+      password.length < 6
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Enter your name, email and a password of at least 6 characters."
+      });
+    }
+
+    const cleanName = fullName.trim();
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (!cleanName || cleanName.length > 100) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid full name."
+      });
+    }
+
+    // Create Firebase Authentication account
+    newUser = await admin.auth().createUser({
+      email: cleanEmail,
+      password: password,
+      displayName: cleanName
+    });
+
+    const db = admin.firestore();
+
+    const studentRef = db.collection("students").doc(newUser.uid);
+    const counterRef = db.collection("counters").doc("studentIdCounter");
+
+    let studentId;
+
+    // Generate a unique ID safely using a Firestore transaction
+    await db.runTransaction(async (transaction) => {
+      const counter = await transaction.get(counterRef);
+
+      const nextNumber = counter.exists
+        ? counter.data().nextNumber
+        : 123;
+
+      if (
+        !Number.isSafeInteger(nextNumber) ||
+        nextNumber < 123
+      ) {
+        throw new Error("Invalid student ID counter.");
+      }
+
+      studentId = "TFQ/" + String(nextNumber).padStart(5, "0");
+
+      transaction.set(counterRef, {
+        nextNumber: nextNumber + 1
+      });
+
+      transaction.set(studentRef, {
+        uid: newUser.uid,
+        studentId: studentId,
+        fullName: cleanName,
+        email: cleanEmail,
+        status: "active",
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Student registration successful!",
+      studentId: studentId
+    });
+
+  } catch (error) {
+
+    // Remove the authentication account if profile creation fails
+    if (newUser) {
+      await admin.auth().deleteUser(newUser.uid).catch(() => {});
+    }
+
+    if (error.code === "auth/email-already-exists") {
+      return res.status(409).json({
+        success: false,
+        message: "This email is already registered."
+      });
+    }
+
+    console.error("Student registration error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Registration failed. Please try again."
+    });
+  }
+});
+
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
