@@ -1,0 +1,327 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEFE QIUZ - Student Portal</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: #f1f5f9;
+            color: #172554;
+        }
+
+        header {
+            background: #172554;
+            color: white;
+            text-align: center;
+            padding: 25px 15px;
+        }
+
+        header h1 {
+            margin: 0 0 8px;
+        }
+
+        .container {
+            max-width: 430px;
+            margin: 35px auto;
+            padding: 15px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px #00000012;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .tabs button {
+            flex: 1;
+            background: #e2e8f0;
+            color: #172554;
+        }
+
+        .tabs button.active {
+            background: #1d4ed8;
+            color: white;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            margin: 9px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 7px;
+            background: #1d4ed8;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #message {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            overflow-wrap: anywhere;
+        }
+
+        .result {
+            text-align: center;
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .student-id {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1d4ed8;
+        }
+
+        .forgot {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #1d4ed8;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>TEFE QIUZ</h1>
+    <p>Student Examination Portal</p>
+</header>
+
+<div class="container">
+    <div class="card">
+
+        <div class="tabs">
+            <button id="loginTab" class="active"
+                onclick="showLogin()">LOGIN</button>
+
+            <button id="registerTab"
+                onclick="showRegister()">REGISTER</button>
+        </div>
+
+        <div id="loginSection">
+            <h2>Student Login</h2>
+
+            <input id="loginId"
+                placeholder="Student ID (TFQ/00123)">
+
+            <input id="loginPassword"
+                type="password"
+                placeholder="Password">
+
+            <button onclick="studentLogin()">LOGIN</button>
+
+            <a class="forgot" href="#"
+                onclick="showForgot(); return false;">
+                Forgot password?
+            </a>
+        </div>
+
+        <div id="registerSection" class="hidden">
+            <h2>Student Registration</h2>
+
+            <input id="fullName"
+                placeholder="Full name">
+
+            <input id="email"
+                type="email"
+                placeholder="Email address">
+
+            <input id="password"
+                type="password"
+                placeholder="Create password (minimum 6 characters)">
+
+            <input id="confirmPassword"
+                type="password"
+                placeholder="Confirm password">
+
+            <button onclick="registerStudent()">
+                CREATE ACCOUNT
+            </button>
+
+            <div id="registrationResult"></div>
+        </div>
+
+        <div id="forgotSection" class="hidden">
+            <h2>Recover Password</h2>
+
+            <input id="recoveryId"
+                placeholder="Your Student ID">
+
+            <button onclick="recoverPassword()">
+                SEND RECOVERY EMAIL
+            </button>
+        </div>
+
+        <p id="message"></p>
+
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+
+<script>
+    // We will connect your Firebase configuration here.
+
+    const firebaseConfig = {
+  apiKey: "AIzaSyBVQgHN3PqLH2Q0MaOrVwXKNq2-wQSue98",
+  authDomain: "tefe-qiuz.firebaseapp.com",
+  projectId: "tefe-qiuz",
+  storageBucket: "tefe-qiuz.firebasestorage.app",
+  messagingSenderId: "397460827907",
+  appId: "1:397460827907:web:c64188008b69d9eef18336",
+  measurementId: "G-DBNDVH3G5R"
+};
+        // Copy your existing Firebase configuration
+        // from index.html into this object.
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    const backendURL = "https://tefe-qiuz.onrender.com";
+
+    function showLogin() {
+        loginSection.classList.remove("hidden");
+        registerSection.classList.add("hidden");
+        forgotSection.classList.add("hidden");
+
+        loginTab.classList.add("active");
+        registerTab.classList.remove("active");
+        message.textContent = "";
+    }
+
+    function showRegister() {
+        loginSection.classList.add("hidden");
+        registerSection.classList.remove("hidden");
+        forgotSection.classList.add("hidden");
+
+        loginTab.classList.remove("active");
+        registerTab.classList.add("active");
+        message.textContent = "";
+    }
+
+    function showForgot() {
+        loginSection.classList.add("hidden");
+        registerSection.classList.add("hidden");
+        forgotSection.classList.remove("hidden");
+        message.textContent = "";
+    }
+
+    async function registerStudent() {
+        const fullName = document.getElementById("fullName").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+
+        const resultBox = document.getElementById("registrationResult");
+        resultBox.innerHTML = "";
+        message.textContent = "";
+
+        if (!fullName || !email || !password) {
+            message.textContent = "Please complete all fields.";
+            return;
+        }
+
+        if (password.length < 6) {
+            message.textContent = "Password must have at least 6 characters.";
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            message.textContent = "Passwords do not match.";
+            return;
+        }
+
+        try {
+            message.textContent = "Creating your account...";
+
+            const response = await fetch(
+                backendURL + "/register-student",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        fullName,
+                        email,
+                        password
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || "Registration failed.");
+            }
+
+            resultBox.innerHTML =
+                '<div class="result">' +
+                '<p>Registration successful!</p>' +
+                '<p>Your Student ID:</p>' +
+                '<div class="student-id">' + data.studentId + '</div>' +
+                '<p>Please save your Student ID.</p>' +
+                '</div>';
+
+            message.textContent = "You can now log in using your Student ID.";
+
+        } catch (error) {
+            message.textContent = error.message;
+        }
+    }
+
+    async function studentLogin() {
+        message.textContent =
+            "Student ID login will be connected in the next setup step.";
+    }
+
+    async function recoverPassword() {
+        message.textContent =
+            "Email recovery will be connected in the next setup step.";
+    }
+</script>
+
+</body>
+</html>
