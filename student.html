@@ -217,12 +217,10 @@ const message = document.getElementById("message");
   messagingSenderId: "397460827907",
   appId: "1:397460827907:web:c64188008b69d9eef18336",
   measurementId: "G-DBNDVH3G5R"
-};
-        // Copy your existing Firebase configuration
-        // from index.html into this object.
-    };
-
     firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    const backendURL = "https://tefe-qiuz.onrender.com";
     const auth = firebase.auth();
 
     const backendURL = "https://tefe-qiuz.onrender.com";
