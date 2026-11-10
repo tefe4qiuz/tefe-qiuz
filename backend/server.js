@@ -256,6 +256,101 @@ app.post("/student-login", async (req, res) => {
     });
   }
 });
+
+// ADMIN: CREATE EXAMINATION
+app.post("/create-exam", async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization || "";
+
+        if (!authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({
+                success: false,
+                message: "Authentication required."
+            });
+        }
+
+        const token = authHeader.substring(7);
+        const decoded = await admin.auth().verifyIdToken(token);
+
+        if (decoded.uid !== process.env.ADMIN_UID) {
+            return res.status(403).json({
+                success: false,
+                message: "Administrator access denied."
+            });
+        }
+
+        const {
+            title,
+            subject,
+            grade,
+            duration,
+            attempts,
+            examPassword,
+            questions
+        } = req.body;
+
+        if (
+            typeof title !== "string" || !title.trim() ||
+            typeof subject !== "string" || !subject.trim() ||
+            typeof grade !== "string" || !grade.trim() ||
+            !Number.isInteger(duration) || duration < 1 ||
+            !Number.isInteger(attempts) || attempts < 1 ||
+            !Array.isArray(questions) || questions.length === 0
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid examination information."
+            });
+        }
+
+        for (const q of questions) {
+            if (
+                typeof q.question !== "string" || !q.question.trim() ||
+                !q.options ||
+                !["A", "B", "C", "D"].every(
+                    key => typeof q.options[key] === "string" &&
+                           q.options[key].trim()
+                ) ||
+                !["A", "B", "C", "D"].includes(q.correctAnswer)
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message: "One or more questions are incomplete."
+                });
+            }
+        }
+
+        const examRef = await admin.firestore()
+            .collection("exams")
+            .add({
+                title: title.trim(),
+                subject: subject.trim(),
+                grade,
+                duration,
+                attempts,
+                examPassword: examPassword || "",
+                questions,
+                status: "draft",
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                createdBy: decoded.uid
+            });
+
+        return res.status(201).json({
+            success: true,
+            message: "Examination saved successfully as a draft.",
+            examId: examRef.id
+        });
+
+    } catch (error) {
+        console.error("Create exam error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to save examination."
+        });
+    }
+});
+                  
       
 const PORT = process.env.PORT || 3000;
 
