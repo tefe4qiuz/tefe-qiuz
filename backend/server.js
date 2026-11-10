@@ -158,6 +158,99 @@ app.post("/register-student", async (req, res) => {
 });
 
 
+app.post("/student-login", async (req, res) => {
+  try {
+    const { studentId, password } = req.body;
+
+    if (
+      typeof studentId !== "string" ||
+      typeof password !== "string" ||
+      !studentId.trim() ||
+      !password
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Enter your Student ID and password."
+      });
+    }
+
+    const cleanId = studentId.trim().toUpperCase();
+
+    const db = admin.firestore();
+
+    // Find the student using their unique ID
+    const snapshot = await db.collection("students")
+      .where("studentId", "==", cleanId)
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid Student ID or password."
+      });
+    }
+
+    const student = snapshot.docs[0].data();
+
+    if (student.status !== "active") {
+      return res.status(403).json({
+        success: false,
+        message: "This student account is not active."
+      });
+    }
+
+    // Verify password through Firebase Authentication
+    const firebaseResponse = await fetch(
+      "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" +
+      process.env.FIREBASE_WEB_API_KEY,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: student.email,
+          password: password,
+          returnSecureToken: true
+        })
+      }
+    );
+
+    const authResult = await firebaseResponse.json();
+
+    if (
+      !firebaseResponse.ok ||
+      authResult.localId !== student.uid
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid Student ID or password."
+      });
+    }
+
+    // Create a Firebase custom login token
+    const customToken = await admin.auth()
+      .createCustomToken(student.uid);
+
+    return res.json({
+      success: true,
+      message: "Student login successful.",
+      customToken: customToken,
+      studentId: student.studentId,
+      fullName: student.fullName
+    });
+
+  } catch (error) {
+    console.error("Student login error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to log in. Please try again."
+    });
+  }
+});
+      
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
