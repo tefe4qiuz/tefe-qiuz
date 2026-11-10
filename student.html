@@ -324,10 +324,49 @@
         }
     }
 
-    async function studentLogin() {
-        message.textContent =
-            "Student ID login will be connected in the next setup step.";
+   async function studentLogin() {
+    const studentId = document.getElementById("loginId").value.trim();
+    const password = document.getElementById("loginPassword").value;
+
+    message.style.color = "#dc2626";
+    message.textContent = "Signing in...";
+
+    try {
+        const response = await fetch(
+            backendURL + "/student-login",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    studentId: studentId,
+                    password: password
+                })
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || "Login failed.");
+        }
+
+        await auth.signInWithCustomToken(result.customToken);
+
+        sessionStorage.setItem("studentId", result.studentId);
+        sessionStorage.setItem("studentName", result.fullName);
+
+        message.style.color = "#15803d";
+        message.textContent = "Login successful! Opening dashboard...";
+
+        window.location.href = "student-dashboard.html";
+
+    } catch (error) {
+        message.style.color = "#dc2626";
+        message.textContent = error.message;
     }
+    } 
 
     async function recoverPassword() {
         message.textContent =
