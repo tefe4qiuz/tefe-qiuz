@@ -1,0 +1,322 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TEFE QIUZ - Exam Management</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    color: #172554;
+}
+
+header {
+    background: #102b50;
+    color: white;
+    padding: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.container {
+    max-width: 850px;
+    margin: auto;
+    padding: 20px;
+}
+
+.panel {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 12px rgba(0,0,0,.06);
+}
+
+label {
+    display: block;
+    margin: 15px 0 6px;
+    font-weight: bold;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    font-size: 16px;
+}
+
+button {
+    padding: 12px 18px;
+    border: none;
+    border-radius: 7px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 12px;
+}
+
+.primary {
+    background: #2563eb;
+    color: white;
+}
+
+.secondary {
+    background: #e2e8f0;
+    color: #172554;
+}
+
+.question {
+    background: #f8fafc;
+    padding: 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    margin-top: 18px;
+}
+
+#message {
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+    <h2>TEFE QIUZ</h2>
+    <button class="secondary"
+    onclick="window.location.href='dashboard.html'">
+        Back to Dashboard
+    </button>
+</header>
+
+<main class="container">
+
+<section class="panel">
+    <h2>📝 Create Examination</h2>
+    <p>Enter the examination information below.</p>
+
+    <label>Exam Title</label>
+    <input id="examTitle" placeholder="Example: Biology Final Exam">
+
+    <label>Subject</label>
+    <input id="subject" placeholder="Example: Biology">
+
+    <label>Grade</label>
+    <select id="grade">
+        <option value="">Select grade</option>
+        <option>Grade 9</option>
+        <option>Grade 10</option>
+        <option>Grade 11</option>
+        <option>Grade 12</option>
+    </select>
+
+    <label>Duration (minutes)</label>
+    <input id="duration" type="number" min="1"
+    placeholder="Example: 60">
+
+    <label>Attempts Allowed</label>
+    <input id="attempts" type="number" min="1"
+    value="1">
+
+    <label>Exam Password (optional)</label>
+    <input id="examPassword" type="password"
+    placeholder="Leave blank if no password is required">
+</section>
+
+<section class="panel">
+    <h2>Questions</h2>
+    <div id="questions"></div>
+
+    <button class="secondary" onclick="addQuestion()">
+        + Add Question
+    </button>
+</section>
+
+<section class="panel">
+    <button class="primary" onclick="saveExam()">
+        Save Examination
+    </button>
+
+    <p id="message"></p>
+</section>
+
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBVQgHN3PqLH2Q0MaOrVwXKNq2-wQSue98",
+  authDomain: "tefe-qiuz.firebaseapp.com",
+  projectId: "tefe-qiuz",
+  storageBucket: "tefe-qiuz.firebasestorage.app",
+  messagingSenderId: "397460827907",
+  appId: "1:397460827907:web:c64188008b69d9eef18336",
+  measurementId: "G-DBNDVH3G5R"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+const backendURL = "https://tefe-qiuz.onrender.com";
+
+let questionCount = 0;
+
+auth.onAuthStateChanged(async function(user) {
+    if (!user) {
+        window.location.href = "admin.html";
+        return;
+    }
+
+    try {
+        const token = await user.getIdToken();
+
+        const response = await fetch(
+            backendURL + "/verify-admin",
+            {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || !result.authorized) {
+            await auth.signOut();
+            window.location.href = "admin.html";
+        }
+
+    } catch (error) {
+        document.getElementById("message").textContent =
+            "Unable to verify administrator. Please reload.";
+    }
+});
+
+function addQuestion() {
+    questionCount++;
+
+    const container = document.getElementById("questions");
+
+    const div = document.createElement("div");
+    div.className = "question";
+
+    div.innerHTML = `
+        <h3>Question ${questionCount}</h3>
+
+        <label>Question text</label>
+        <input class="questionText"
+        placeholder="Enter question">
+
+        <label>Option A</label>
+        <input class="optionA" placeholder="Option A">
+
+        <label>Option B</label>
+        <input class="optionB" placeholder="Option B">
+
+        <label>Option C</label>
+        <input class="optionC" placeholder="Option C">
+
+        <label>Option D</label>
+        <input class="optionD" placeholder="Option D">
+
+        <label>Correct Answer</label>
+        <select class="correctAnswer">
+            <option value="">Choose correct answer</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+        </select>
+
+        <button class="secondary"
+        onclick="this.parentElement.remove()">
+            Remove Question
+        </button>
+    `;
+
+    container.appendChild(div);
+}
+
+async function saveExam() {
+    const message = document.getElementById("message");
+
+    const user = auth.currentUser;
+
+    if (!user) {
+        message.textContent = "Please log in again.";
+        return;
+    }
+
+    const title = document.getElementById("examTitle").value.trim();
+    const subject = document.getElementById("subject").value.trim();
+    const grade = document.getElementById("grade").value;
+    const duration = Number(document.getElementById("duration").value);
+    const attempts = Number(document.getElementById("attempts").value);
+    const examPassword = document.getElementById("examPassword").value;
+
+    const questionElements =
+        document.querySelectorAll(".question");
+
+    const questions = [];
+
+    for (const item of questionElements) {
+        const question = item.querySelector(".questionText").value.trim();
+        const A = item.querySelector(".optionA").value.trim();
+        const B = item.querySelector(".optionB").value.trim();
+        const C = item.querySelector(".optionC").value.trim();
+        const D = item.querySelector(".optionD").value.trim();
+        const correctAnswer =
+            item.querySelector(".correctAnswer").value;
+
+        if (!question || !A || !B || !C || !D || !correctAnswer) {
+            message.style.color = "#dc2626";
+            message.textContent =
+                "Please complete every question and its correct answer.";
+            return;
+        }
+
+        questions.push({
+            question,
+            options: { A, B, C, D },
+            correctAnswer
+        });
+    }
+
+    if (!title || !subject || !grade ||
+        !duration || duration < 1 ||
+        !attempts || attempts < 1 ||
+        questions.length === 0) {
+
+        message.style.color = "#dc2626";
+        message.textContent =
+            "Complete all exam information and add at least one question.";
+        return;
+    }
+
+    message.style.color = "#2563eb";
+    message.textContent = "Preparing examination...";
+
+    // The secure save endpoint will be connected
+    // after we build and test it on the backend.
+    message.textContent =
+        "Exam form is ready. Secure saving is not connected yet.";
+}
+</script>
+
+</body>
+  </html>
+  
