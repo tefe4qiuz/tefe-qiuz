@@ -200,14 +200,14 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 
+
 <script>
     const loginSection = document.getElementById("loginSection");
-const registerSection = document.getElementById("registerSection");
-const forgotSection = document.getElementById("forgotSection");
-const loginTab = document.getElementById("loginTab");
-const registerTab = document.getElementById("registerTab");
-const message = document.getElementById("message");
-    // We will connect your Firebase configuration here.
+    const registerSection = document.getElementById("registerSection");
+    const forgotSection = document.getElementById("forgotSection");
+    const loginTab = document.getElementById("loginTab");
+    const registerTab = document.getElementById("registerTab");
+    const message = document.getElementById("message");
 
     const firebaseConfig = {
   apiKey: "AIzaSyBVQgHN3PqLH2Q0MaOrVwXKNq2-wQSue98",
@@ -217,10 +217,9 @@ const message = document.getElementById("message");
   messagingSenderId: "397460827907",
   appId: "1:397460827907:web:c64188008b69d9eef18336",
   measurementId: "G-DBNDVH3G5R"
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    };
 
-    const backendURL = "https://tefe-qiuz.onrender.com";
+    firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
     const backendURL = "https://tefe-qiuz.onrender.com";
@@ -229,18 +228,15 @@ const message = document.getElementById("message");
         loginSection.classList.remove("hidden");
         registerSection.classList.add("hidden");
         forgotSection.classList.add("hidden");
-
         loginTab.classList.add("active");
         registerTab.classList.remove("active");
         message.textContent = "";
     }
 
     function showRegister() {
-        alert("Register button is working!");
         loginSection.classList.add("hidden");
         registerSection.classList.remove("hidden");
         forgotSection.classList.add("hidden");
-
         loginTab.classList.remove("active");
         registerTab.classList.add("active");
         message.textContent = "";
@@ -258,12 +254,12 @@ const message = document.getElementById("message");
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
         const confirmPassword = document.getElementById("confirmPassword").value;
-
         const resultBox = document.getElementById("registrationResult");
-        resultBox.innerHTML = "";
+
+        resultBox.textContent = "";
         message.textContent = "";
 
-        if (!fullName || !email || !password) {
+        if (!fullName || !email || !password || !confirmPassword) {
             message.textContent = "Please complete all fields.";
             return;
         }
@@ -302,13 +298,24 @@ const message = document.getElementById("message");
                 throw new Error(data.message || "Registration failed.");
             }
 
-            resultBox.innerHTML =
-                '<div class="result">' +
-                '<p>Registration successful!</p>' +
-                '<p>Your Student ID:</p>' +
-                '<div class="student-id">' + data.studentId + '</div>' +
-                '<p>Please save your Student ID.</p>' +
-                '</div>';
+            const result = document.createElement("div");
+            result.className = "result";
+
+            const heading = document.createElement("p");
+            heading.textContent = "Registration successful!";
+
+            const idLabel = document.createElement("p");
+            idLabel.textContent = "Your Student ID:";
+
+            const idValue = document.createElement("div");
+            idValue.className = "student-id";
+            idValue.textContent = data.studentId;
+
+            const reminder = document.createElement("p");
+            reminder.textContent = "Please save your Student ID.";
+
+            result.append(heading, idLabel, idValue, reminder);
+            resultBox.appendChild(result);
 
             message.textContent = "You can now log in using your Student ID.";
 
@@ -327,6 +334,5 @@ const message = document.getElementById("message");
             "Email recovery will be connected in the next setup step.";
     }
 </script>
-
 </body>
 </html>
