@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEFE QIUZ   Student Dashboard</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #172554;
+        }
+
+        header {
+            background: #172554;
+            color: white;
+            padding: 22px 16px;
+            text-align: center;
+        }
+
+        header h2 {
+            margin: 0 0 8px;
+        }
+
+        header p {
+            margin: 0;
+            color: #bfdbfe;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 25px auto;
+            padding: 0 16px;
+        }
+
+        .welcome {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px #00000010;
+        }
+
+        .welcome h2 {
+            margin-top: 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px #00000010;
+        }
+
+        .card h3 {
+            color: #1d4ed8;
+            margin-top: 0;
+        }
+
+        .card p {
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        button {
+            background: #1d4ed8;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 7px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1e40af;
+        }
+
+        .logout {
+            background: #dc2626;
+            margin-top: 20px;
+        }
+
+        .logout:hover {
+            background: #b91c1c;
+        }
+
+        footer {
+            text-align: center;
+            color: #64748b;
+            padding: 25px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h2>TEFE QIUZ</h2>
+    <p>Student Dashboard</p>
+</header>
+
+<div class="container">
+
+    <div class="welcome">
+        <h2>Welcome, <span id="studentName">Student</span>!</h2>
+        <p>Student ID: <strong id="studentId"></strong></p>
+        <p>Welcome to your examination portal.</p>
+    </div>
+
+    <div class="grid">
+
+        <div class="card">
+            <h3>Available Exams</h3>
+            <p>View and take your available examinations.</p>
+            <button onclick="showMessage('Available Exams')">Open</button>
+        </div>
+
+        <div class="card">
+            <h3>My Results</h3>
+            <p>Check your examination scores and results.</p>
+            <button onclick="showMessage('My Results')">Open</button>
+        </div>
+
+        <div class="card">
+            <h3>Exam History</h3>
+            <p>Review your previous examination attempts.</p>
+            <button onclick="showMessage('Exam History')">Open</button>
+        </div>
+
+        <div class="card">
+            <h3>My Profile</h3>
+            <p>View your student account information.</p>
+            <button onclick="showMessage('My Profile')">Open</button>
+        </div>
+
+        <div class="card">
+            <h3>Announcements</h3>
+            <p>Read important notices from the administrator.</p>
+            <button onclick="showMessage('Announcements')">Open</button>
+        </div>
+
+        <div class="card">
+            <h3>Upcoming Exams</h3>
+            <p>See examinations scheduled for the future.</p>
+            <button onclick="showMessage('Upcoming Exams')">Open</button>
+        </div>
+
+    </div>
+
+    <p id="message"></p>
+
+    <button class="logout" onclick="logout()">Log Out</button>
+
+</div>
+
+<footer>
+    <strong>TEFE QIUZ   Progress doesn't require perfection!</strong>
+    <p>© 2026 TEFE QIUZ. All rights reserved.</p>
+    
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+  apiKey: "AIzaSyBVQgHN3PqLH2Q0MaOrVwXKNq2-wQSue98",
+  authDomain: "tefe-qiuz.firebaseapp.com",
+  projectId: "tefe-qiuz",
+  storageBucket: "tefe-qiuz.firebasestorage.app",
+  messagingSenderId: "397460827907",
+  appId: "1:397460827907:web:c64188008b69d9eef18336",
+  measurementId: "G-DBNDVH3G5R"
+};
+
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+
+    auth.onAuthStateChanged(function(user) {
+        if (!user) {
+            window.location.href = "student.html";
+            return;
+        }
+
+        document.getElementById("studentName").textContent =
+            sessionStorage.getItem("studentName") || "Student";
+
+        document.getElementById("studentId").textContent =
+            sessionStorage.getItem("studentId") || "Not available";
+    });
+
+    function showMessage(section) {
+        document.getElementById("message").textContent =
+            section + " will be available in the next development step.";
+    }
+
+    function logout() {
+        auth.signOut().then(function() {
+            sessionStorage.clear();
+            window.location.href = "student.html";
+        });
+    }
+</script>
+
+</body>
+  </html>
