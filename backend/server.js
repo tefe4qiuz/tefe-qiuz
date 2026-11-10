@@ -218,6 +218,12 @@ app.post("/student-login", async (req, res) => {
     );
 
     const authResult = await firebaseResponse.json();
+    if (!firebaseResponse.ok) {
+    console.error(
+        "Firebase login diagnostic:",
+        authResult.error?.message || "Unknown error"
+    );
+    }
 
     if (
       !firebaseResponse.ok ||
