@@ -310,10 +310,44 @@ async function saveExam() {
     message.style.color = "#2563eb";
     message.textContent = "Preparing examination...";
 
-    // The secure save endpoint will be connected
-    // after we build and test it on the backend.
-    message.textContent =
-        "Exam form is ready. Secure saving is not connected yet.";
+    
+try {
+    const token = await user.getIdToken();
+
+    const response = await fetch(
+        backendURL + "/create-exam",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify({
+                title,
+                subject,
+                grade,
+                duration,
+                attempts,
+                examPassword: "",
+                questions
+            })
+        }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+        throw new Error(result.message || "Could not save exam.");
+    }
+
+    message.style.color = "#15803d";
+    message.textContent = "Examination saved successfully!";
+
+} catch (error) {
+    message.style.color = "#dc2626";
+    message.textContent = error.message;
+}
+    
 }
 </script>
 
