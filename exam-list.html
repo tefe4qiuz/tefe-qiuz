@@ -215,6 +215,20 @@ async function loadExams() {
             card.appendChild(subject);
             card.appendChild(details);
             card.appendChild(status);
+            const actions = document.createElement("div");
+actions.style.marginTop = "15px";
+
+const viewButton = document.createElement("button");
+viewButton.textContent = "View";
+viewButton.style.marginRight = "8px";
+
+const editButton = document.createElement("button");
+editButton.textContent = "Edit";
+
+actions.appendChild(viewButton);
+actions.appendChild(editButton);
+
+card.appendChild(actions);
 
             examList.appendChild(card);
         });
