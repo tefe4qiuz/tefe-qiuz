@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Examination - TEFE QIUZ</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+            color: #1e293b;
+        }
+
+        header {
+            background: #102d50;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        main {
+            max-width: 850px;
+            margin: 25px auto;
+            padding: 20px;
+        }
+
+        .panel, .question {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 18px;
+        }
+
+        .question {
+            border-left: 5px solid #2563eb;
+        }
+
+        .correct {
+            color: #15803d;
+            font-weight: bold;
+        }
+
+        button {
+            border: 0;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .back {
+            background: #e2e8f0;
+        }
+
+        #message {
+            color: #dc2626;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h2>TEFE QIUZ</h2>
+    <button class="back"
+        onclick="window.location.href='exam-list.html'">
+        Back
+    </button>
+</header>
+
+<main>
+    <div class="panel">
+        <h2 id="examTitle">Loading examination...</h2>
+        <p id="examInfo"></p>
+        <p id="message"></p>
+    </div>
+
+    <div id="questions"></div>
+</main>
+
+</body>
+</html>
