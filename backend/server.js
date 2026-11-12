@@ -351,7 +351,67 @@ app.post("/create-exam", async (req, res) => {
     }
 });
                   
-      
+
+
+// ADMIN: GET ALL EXAMINATIONS
+app.get("/admin-exams", async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization || "";
+
+        if (!authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({
+                success: false,
+                message: "Authentication required."
+            });
+        }
+
+        const token = authHeader.substring(7);
+        const decoded = await admin.auth().verifyIdToken(token);
+
+        if (decoded.uid !== process.env.ADMIN_UID) {
+            return res.status(403).json({
+                success: false,
+                message: "Administrator access denied."
+            });
+        }
+
+        const snapshot = await admin.firestore()
+            .collection("exams")
+            .orderBy("createdAt", "desc")
+            .get();
+
+        const exams = snapshot.docs.map(doc => {
+            const data = doc.data();
+
+            return {
+                id: doc.id,
+                title: data.title,
+                subject: data.subject,
+                grade: data.grade,
+                duration: data.duration,
+                attempts: data.attempts,
+                status: data.status,
+                questionCount: Array.isArray(data.questions)
+                    ? data.questions.length
+                    : 0
+            };
+        });
+
+        return res.json({
+            success: true,
+            exams
+        });
+
+    } catch (error) {
+        console.error("Get admin exams error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to load examinations."
+        });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
