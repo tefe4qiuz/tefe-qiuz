@@ -412,6 +412,59 @@ app.get("/admin-exams", async (req, res) => {
     }
 });
 
+
+app.get("/admin-exam/:id", async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization || "";
+
+        if (!authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({
+                success: false,
+                message: "Authentication required."
+            });
+        }
+
+        const token = authHeader.substring(7);
+        const decoded = await admin.auth().verifyIdToken(token);
+
+        if (decoded.uid !== process.env.ADMIN_UID) {
+            return res.status(403).json({
+                success: false,
+                message: "Administrator access denied."
+            });
+        }
+
+        const examRef = admin.firestore()
+            .collection("exams")
+            .doc(req.params.id);
+
+        const examDoc = await examRef.get();
+
+        if (!examDoc.exists) {
+            return res.status(404).json({
+                success: false,
+                message: "Examination not found."
+            });
+        }
+
+        return res.json({
+            success: true,
+            exam: {
+                id: examDoc.id,
+                ...examDoc.data()
+            }
+        });
+
+    } catch (error) {
+        console.error("Get admin exam error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to load examination."
+        });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
