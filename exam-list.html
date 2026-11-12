@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TEFE QIUZ - Exam List</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    color: #172554;
+}
+
+header {
+    background: #102b50;
+    color: white;
+    padding: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 20px;
+}
+
+.panel {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.exam {
+    border: 1px solid #cbd5e1;
+    border-left: 5px solid #2563eb;
+    border-radius: 9px;
+    padding: 17px;
+    margin-top: 15px;
+}
+
+.exam h3 {
+    margin-top: 0;
+}
+
+.status {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: #e2e8f0;
+    color: #334155;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+button {
+    padding: 11px 16px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.primary {
+    background: #2563eb;
+    color: white;
+}
+
+.secondary {
+    background: #e2e8f0;
+    color: #172554;
+}
+
+#message {
+    color: #64748b;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h2>TEFE QIUZ</h2>
+    <button class="secondary"
+    onclick="window.location.href='dashboard.html'">
+        Back to Dashboard
+    </button>
+</header>
+
+<main class="container">
+
+<section class="panel">
+    <h2>📚 Examination Management</h2>
+    <p>View and manage examinations created by the administrator.</p>
+
+    <button class="primary" onclick="loadExams()">
+        Refresh Examinations
+    </button>
+
+    <p id="message">Loading examinations...</p>
+
+    <div id="examList"></div>
+</section>
+
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBVQgHN3PqLH2Q0MaOrVwXKNq2-wQSue98",
+  authDomain: "tefe-qiuz.firebaseapp.com",
+  projectId: "tefe-qiuz",
+  storageBucket: "tefe-qiuz.firebasestorage.app",
+  messagingSenderId: "397460827907",
+  appId: "1:397460827907:web:c64188008b69d9eef18336",
+  measurementId: "G-DBNDVH3G5R"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+
+const backendURL = "https://tefe-qiuz.onrender.com";
+
+auth.onAuthStateChanged(async function(user) {
+    if (!user) {
+        window.location.href = "admin.html";
+        return;
+    }
+
+    await loadExams();
+});
+
+async function loadExams() {
+    const message = document.getElementById("message");
+    const examList = document.getElementById("examList");
+
+    const user = auth.currentUser;
+
+    if (!user) {
+        message.textContent = "Please log in again.";
+        return;
+    }
+
+    message.textContent = "Loading examinations...";
+    examList.innerHTML = "";
+
+    try {
+        const token = await user.getIdToken();
+
+        const response = await fetch(
+            backendURL + "/admin-exams",
+            {
+                method: "GET",
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(
+                result.message || "Unable to load examinations."
+            );
+        }
+
+        if (result.exams.length === 0) {
+            message.textContent = "No examinations created yet.";
+            return;
+        }
+
+        message.textContent =
+            "Total examinations: " + result.exams.length;
+
+        result.exams.forEach(function(exam) {
+            const card = document.createElement("div");
+            card.className = "exam";
+
+            const title = document.createElement("h3");
+            title.textContent = exam.title;
+
+            const subject = document.createElement("p");
+            subject.textContent =
+                "Subject: " + exam.subject +
+                " | " + exam.grade;
+
+            const details = document.createElement("p");
+            details.textContent =
+                "Duration: " + exam.duration + " minutes" +
+                " | Questions: " + exam.questionCount +
+                " | Attempts: " + exam.attempts;
+
+            const status = document.createElement("span");
+            status.className = "status";
+            status.textContent = exam.status.toUpperCase();
+
+            card.appendChild(title);
+            card.appendChild(subject);
+            card.appendChild(details);
+            card.appendChild(status);
+
+            examList.appendChild(card);
+        });
+
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+</script>
+
+</body>
+  </html>
+  
