@@ -219,6 +219,7 @@ async function loadExams() {
 actions.style.marginTop = "15px";
 
 const viewButton = document.createElement("button");
+viewButton.type = "button";
 viewButton.textContent = "View";
             viewButton.addEventListener("click", function() {
     window.location.href =
