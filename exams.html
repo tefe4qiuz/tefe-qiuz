@@ -381,11 +381,39 @@ async function saveExam() {
             return;
         }
 
-        questions.push({
-            question,
-            options: { A, B, C, D },
-            correctAnswer
-        });
+        
+const questionImage = await uploadExamImage(
+    item.querySelector(".questionImage").files[0],
+    user
+);
+
+const optionImages = {
+    A: await uploadExamImage(
+        item.querySelector(".optionAImage").files[0],
+        user
+    ),
+    B: await uploadExamImage(
+        item.querySelector(".optionBImage").files[0],
+        user
+    ),
+    C: await uploadExamImage(
+        item.querySelector(".optionCImage").files[0],
+        user
+    ),
+    D: await uploadExamImage(
+        item.querySelector(".optionDImage").files[0],
+        user
+    )
+};
+
+questions.push({
+    question,
+    questionImage,
+    options: { A, B, C, D },
+    optionImages,
+    correctAnswer
+});
+    
     }
 
     if (!title || !subject || !grade ||
