@@ -17,7 +17,7 @@
         header {
             background: #102d50;
             color: white;
-            padding: 20px;
+            padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -26,7 +26,7 @@
         main {
             max-width: 850px;
             margin: 25px auto;
-            padding: 20px;
+            padding: 15px;
         }
 
         .panel, .question {
@@ -34,20 +34,29 @@
             padding: 20px;
             border-radius: 12px;
             margin-bottom: 18px;
+            box-shadow: 0 2px 6px #00000010;
         }
 
         .question {
             border-left: 5px solid #2563eb;
         }
 
+        .option {
+            padding: 10px;
+            margin: 7px 0;
+            background: #f1f5f9;
+            border-radius: 7px;
+        }
+
         .correct {
-            color: #15803d;
+            background: #dcfce7;
+            color: #166534;
             font-weight: bold;
         }
 
         button {
             border: 0;
-            padding: 12px 18px;
+            padding: 11px 17px;
             border-radius: 8px;
             cursor: pointer;
         }
@@ -58,6 +67,11 @@
 
         #message {
             color: #dc2626;
+        }
+
+        .answer {
+            color: #15803d;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -81,9 +95,12 @@
 
     <div id="questions"></div>
 </main>
-    <!-- Firebase configuration -->
-    <script>
-        const firebaseConfig = {
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<script>
+const firebaseConfig = {
   apiKey: "AIzaSyBVQgHN3PqLH2Q0MaOrVwXKNq2-wQSue98",
   authDomain: "tefe-qiuz.firebaseapp.com",
   projectId: "tefe-qiuz",
@@ -92,9 +109,124 @@
   appId: "1:397460827907:web:c64188008b69d9eef18336",
   measurementId: "G-DBNDVH3G5R"
 };
-    </script>
 
-</body>
-</html>
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+
+const backendURL = "https://tefe-qiuz.onrender.com";
+
+const params = new URLSearchParams(window.location.search);
+const examId = params.get("id");
+
+const message = document.getElementById("message");
+const questionsContainer = document.getElementById("questions");
+
+auth.onAuthStateChanged(async function(user) {
+
+    if (!user) {
+        window.location.href = "admin.html";
+        return;
+    }
+
+    if (!examId) {
+        message.textContent = "No examination selected.";
+        return;
+    }
+
+    try {
+        message.textContent = "Loading examination...";
+
+        const token = await user.getIdToken();
+
+        const response = await fetch(
+            backendURL + "/admin-exam/" + encodeURIComponent(examId),
+            {
+                method: "GET",
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(
+                result.message || "Unable to load examination."
+            );
+        }
+
+        const exam = result.exam;
+
+        document.getElementById("examTitle").textContent =
+            exam.title;
+
+        document.getElementById("examInfo").textContent =
+            "Subject: " + exam.subject +
+            " | Grade: " + exam.grade +
+            " | Duration: " + exam.duration + " minutes" +
+            " | Attempts: " + exam.attempts +
+            " | Status: " + exam.status.toUpperCase();
+
+        message.textContent = "";
+
+        if (!Array.isArray(exam.questions) ||
+            exam.questions.length === 0) {
+            message.textContent = "This examination has no questions.";
+            return;
+        }
+
+        exam.questions.forEach(function(question, index) {
+
+            const card = document.createElement("div");
+            card.className = "question";
+
+            const heading = document.createElement("h3");
+            heading.textContent =
+                "Question " + (index + 1);
+
+            const questionText = document.createElement("p");
+            questionText.textContent = question.question;
+
+            card.appendChild(heading);
+            card.appendChild(questionText);
+
+            ["A", "B", "C", "D"].forEach(function(letter) {
+
+                const option = document.createElement("div");
+                option.className = "option";
+
+                const optionText =
+                    question.options &&
+                    question.options[letter];
+
+                option.textContent =
+                    letter + ". " + (optionText || "");
+
+                if (question.correctAnswer === letter) {
+                    option.classList.add("correct");
+                }
+
+                card.appendChild(option);
+            });
+
+            const answer = document.createElement("p");
+            answer.className = "answer";
+            answer.textContent =
+                "Correct answer: " +
+                (question.correctAnswer || "Not specified");
+
+            card.appendChild(answer);
+
+            questionsContainer.appendChild(card);
+        });
+
+    } catch (error) {
+        message.textContent = error.message;
+    }
+});
+</script>
+
 </body>
 </html>
