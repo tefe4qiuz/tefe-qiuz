@@ -312,6 +312,37 @@ function addQuestion() {
     });
     }
     
+async function uploadExamImage(file, user) {
+    if (!file) return null;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const token = await user.getIdToken();
+
+    const response = await fetch(
+        "https://tefe-qiuz.onrender.com/upload-exam-image",
+        {
+            method: "POST",
+            headers: {
+                Authorization: "Bearer " + token
+            },
+            body: formData
+        }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+        throw new Error(
+            result.message || "Image upload failed."
+        );
+    }
+
+    return result.imageUrl;
+}
+    
+    
 async function saveExam() {
     const message = document.getElementById("message");
 
