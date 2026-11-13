@@ -331,22 +331,50 @@ app.post("/create-exam", async (req, res) => {
             });
         }
 
-        for (const q of questions) {
-            if (
-                typeof q.question !== "string" || !q.question.trim() ||
-                !q.options ||
+        
+for (const q of questions) {
+    if (
+        typeof q.question !== "string" || !q.question.trim() ||
+        !q.options ||
+        !["A", "B", "C", "D"].every(
+            key => typeof q.options[key] === "string" &&
+                   q.options[key].trim()
+        ) ||
+        !["A", "B", "C", "D"].includes(q.correctAnswer)
+    ) {
+        return res.status(400).json({
+            success: false,
+            message: "One or more questions are incomplete."
+        });
+    }
+
+    const validImage = value =>
+        value === undefined ||
+        value === null ||
+        (
+            typeof value === "string" &&
+            value.startsWith("https://res.cloudinary.com/")
+        );
+
+    if (
+        !validImage(q.questionImage) ||
+        (
+            q.optionImages !== undefined &&
+            (
+                !q.optionImages ||
                 !["A", "B", "C", "D"].every(
-                    key => typeof q.options[key] === "string" &&
-                           q.options[key].trim()
-                ) ||
-                !["A", "B", "C", "D"].includes(q.correctAnswer)
-            ) {
-                return res.status(400).json({
-                    success: false,
-                    message: "One or more questions are incomplete."
-                });
-            }
-        }
+                    key => validImage(q.optionImages[key])
+                )
+            )
+        )
+    ) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid question or option image."
+        });
+    }
+}
+      
 
         const examRef = await admin.firestore()
             .collection("exams")
