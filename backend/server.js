@@ -493,6 +493,87 @@ app.get("/admin-exam/:id", async (req, res) => {
     }
 });
 
+
+async function requireAdmin(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization || "";
+
+    if (!authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required."
+      });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = await admin.auth().verifyIdToken(token);
+
+    if (decoded.uid !== process.env.ADMIN_UID) {
+      return res.status(403).json({
+        success: false,
+        message: "Admin access denied."
+      });
+    }
+
+    next();
+
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid authentication token."
+    });
+  }
+}
+
+app.post(
+  "/upload-exam-image",
+  requireAdmin,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "Please select an image."
+        });
+      }
+
+      const imageUrl = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: "tefe-qiuz/exam-images",
+            resource_type: "image"
+          },
+          (error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+
+        stream.end(req.file.buffer);
+      });
+
+      return res.json({
+        success: true,
+        message: "Image uploaded successfully.",
+        imageUrl: imageUrl.secure_url,
+        publicId: imageUrl.public_id
+      });
+
+    } catch (error) {
+      console.error("Image upload error:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Unable to upload image."
+      });
+    }
+  }
+);
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
