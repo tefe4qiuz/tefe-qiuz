@@ -206,6 +206,7 @@ auth.onAuthStateChanged(async function(user) {
     }
 });
 
+
 function addQuestion() {
     questionCount++;
 
@@ -221,17 +222,44 @@ function addQuestion() {
         <input class="questionText"
         placeholder="Enter question">
 
+        <label>Question image (optional)</label>
+        <input type="file" class="questionImage"
+        accept="image/jpeg,image/png,image/webp">
+
+        <img class="questionPreview"
+        style="display:none; max-width:100%; max-height:200px; margin:10px 0;">
+
         <label>Option A</label>
         <input class="optionA" placeholder="Option A">
+        <label>Option A image (optional)</label>
+        <input type="file" class="optionAImage"
+        accept="image/jpeg,image/png,image/webp">
+        <img class="optionAPreview"
+        style="display:none; max-width:100%; max-height:150px; margin:10px 0;">
 
         <label>Option B</label>
         <input class="optionB" placeholder="Option B">
+        <label>Option B image (optional)</label>
+        <input type="file" class="optionBImage"
+        accept="image/jpeg,image/png,image/webp">
+        <img class="optionBPreview"
+        style="display:none; max-width:100%; max-height:150px; margin:10px 0;">
 
         <label>Option C</label>
         <input class="optionC" placeholder="Option C">
+        <label>Option C image (optional)</label>
+        <input type="file" class="optionCImage"
+        accept="image/jpeg,image/png,image/webp">
+        <img class="optionCPreview"
+        style="display:none; max-width:100%; max-height:150px; margin:10px 0;">
 
         <label>Option D</label>
         <input class="optionD" placeholder="Option D">
+        <label>Option D image (optional)</label>
+        <input type="file" class="optionDImage"
+        accept="image/jpeg,image/png,image/webp">
+        <img class="optionDPreview"
+        style="display:none; max-width:100%; max-height:150px; margin:10px 0;">
 
         <label>Correct Answer</label>
         <select class="correctAnswer">
@@ -249,8 +277,41 @@ function addQuestion() {
     `;
 
     container.appendChild(div);
-}
 
+    const imageFields = [
+        ["questionImage", "questionPreview"],
+        ["optionAImage", "optionAPreview"],
+        ["optionBImage", "optionBPreview"],
+        ["optionCImage", "optionCPreview"],
+        ["optionDImage", "optionDPreview"]
+    ];
+
+    imageFields.forEach(([inputClass, previewClass]) => {
+        const input = div.querySelector("." + inputClass);
+        const preview = div.querySelector("." + previewClass);
+
+        input.addEventListener("change", function () {
+            const file = this.files[0];
+
+            if (!file) {
+                preview.style.display = "none";
+                preview.removeAttribute("src");
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert("Image must be 5 MB or smaller.");
+                this.value = "";
+                preview.style.display = "none";
+                return;
+            }
+
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = "block";
+        });
+    });
+    }
+    
 async function saveExam() {
     const message = document.getElementById("message");
 
