@@ -1,3 +1,4 @@
+
 {
   "name": "tefe-qiuz-backend",
   "version": "1.0.0",
@@ -8,6 +9,8 @@
   "dependencies": {
     "express": "^4.21.2",
     "firebase-admin": "^13.0.2",
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+    "cloudinary": "^2.7.0",
+    "multer": "^2.0.2"
   }
 }
