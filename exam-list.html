@@ -220,6 +220,10 @@ actions.style.marginTop = "15px";
 
 const viewButton = document.createElement("button");
 viewButton.textContent = "View";
+            viewButton.addEventListener("click", function() {
+    window.location.href =
+        "view-exam.html?id=" + encodeURIComponent(exam.id);
+});
 viewButton.style.marginRight = "8px";
 
 const editButton = document.createElement("button");
